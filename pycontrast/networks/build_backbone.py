@@ -1,7 +1,28 @@
 import torch
 import torch.nn as nn
+import torch.functional as F
 from .resnet import model_dict
 from .util import Normalize, JigsawHead
+
+
+# Add Task2Vec as part of the SingleHead Class
+
+class Attention(nn.Module):
+    """Soft-Attention on the Embedding z"""
+    
+    def __init__(self, input_dim, latent_dim):
+        super(Attention, self).__init__()
+        self.latent_dim = latent_dim
+        self.input_dim = input_dim
+        self.attention = nn.Sequential(
+            nn.Linear(input_dim, latent_dim),
+            nn.ReLU(inplace=True), #FIXME Try Tanh as well
+            nn.Linear(latent_dim,input_dim)
+        )
+
+    def forward(self, x):
+        x = self.attention(x)
+        return F.softmax(x)
 
 
 class RGBSingleHead(nn.Module):
